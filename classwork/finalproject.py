@@ -2,6 +2,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from operator import sub
+import random as random
 
 #inputname = raw_input('Please enter the filepath of your input file: ')
 inputname = "/home/mlh/classwork/finaldata.dat"
@@ -50,16 +51,58 @@ uncm = math.sqrt(sum(w)/delta)
 
 print "The weighted linear least-squares fit line follows the format y = mx+b, where m = %s +/- %s and b = %s +/- %s" % (m, uncm, b, uncb)
 
-plt.figure(1)
-plt.scatter(x,y)
-plt.errorbar(x, y, xerr=None, yerr=asymmetric_error,linestyle='None')
-plt.plot(x, linear)
-plt.ylim(ymax=max(y)+10,ymin=min(y)-5)
-plt.xlabel('x')
-plt.ylabel('y')
-plt.show()
 
 ylower = [i-j for i,j in zip(y,lower_yerror)]
 yupper = [i+j for i,j in zip(y,upper_yerror)]
 ywitherror = [ylower,yupper]
-print ywitherror
+#print ywitherror
+
+
+success = 0   #define success as getting a m & b value that give a y value within known y uncertainty
+trials = 0   # define failure as an m & b value that do not give a y value within known y uncertainty
+
+calcm=[]
+calcb=[]
+xout=[]
+mcy=[]
+yout=[]
+
+xindex = 0
+
+for i in range (1,5):
+	for i in x:
+		xindex = int(i)
+		trials +=1.0
+
+		mcm = random.random()
+		mcb = random.random()
+
+		mcy = i*mcm+mcb
+
+		if mcy <= yupper[xindex] and mcy >= ylower[xindex]:
+			success +=1.0
+			calcm.append(float(mcm))
+			calcb.append(float(mcb))
+			xout.append(float(i))
+			yout.append(float(mcy))
+
+ratio = success/trials
+
+#print "# of successes %s " % success
+#print "# of trials %s " % trials
+#print "Ratio of successes to trials %s " % ratio
+print np.mean(calcm)
+print np.mean(calcb)
+
+mclinear = [i*j+k for i,j,k in zip(xout,calcm,calcb)]
+avgmclinear = [i*np.mean(calcm)+np.mean(calcb) for i in x]
+
+plt.figure(1)
+plt.scatter(x,y)
+plt.errorbar(x, y, xerr=None, yerr=asymmetric_error,linestyle='None')
+plt.plot(x, linear)
+plt.plot(x, avgmclinear)
+plt.ylim(ymax=max(y)+10,ymin=min(y)-5)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.show()
