@@ -49,8 +49,6 @@ linear = [m*i+b for i in x]
 uncb = math.sqrt(sumwxsq/delta)
 uncm = math.sqrt(sum(w)/delta)
 
-print "The weighted linear least-squares fit line follows the format y = mx+b, where m = %s +/- %s and b = %s +/- %s" % (m, uncm, b, uncb)
-
 
 ylower = [i-j for i,j in zip(y,lower_yerror)]
 yupper = [i+j for i,j in zip(y,upper_yerror)]
@@ -69,7 +67,7 @@ yout=[]
 
 xindex = 0
 
-for i in range (1,5):
+for i in range (1,100):
 	for i in x:
 		xindex = int(i)
 		trials +=1.0
@@ -88,14 +86,26 @@ for i in range (1,5):
 
 ratio = success/trials
 
+MCslopeavg = np.mean(calcm)
+MCinteravg = np.mean(calcb)
+
 #print "# of successes %s " % success
 #print "# of trials %s " % trials
 #print "Ratio of successes to trials %s " % ratio
-print np.mean(calcm)
-print np.mean(calcb)
+print "Monte Carlo m = %s " % MCslopeavg
+print "Monte Carlo b = %s" % MCinteravg
 
-mclinear = [i*j+k for i,j,k in zip(xout,calcm,calcb)]
-avgmclinear = [i*np.mean(calcm)+np.mean(calcb) for i in x]
+#mclinear = [i*j+k for i,j,k in zip(xout,calcm,calcb)]
+avgmclinear = [i*MCslopeavg+MCinteravg for i in x]
+
+stdev_m = (((1.0/(len(calcm)-1.0))*sum([(i-MCslopeavg)**2.0 for i in calcm]))**0.5)/(len(calcm)**0.5)
+
+stdev_b = (((1.0/(len(calcb)-1.0))*sum([(i-MCinteravg)**2.0 for i in calcb]))**0.5)/(len(calcb)**0.5)
+
+print "The weighted linear least-squares fit line follows the format y = mx+b"
+print "Analytically derived values for the slope and intercept are: m = %s +/- %s and b = %s +/- %s" % (m, uncm, b, uncb)
+print "Computed values for the slope and intercept are: m = %s =/- %s and b = %s =/- %s" % (MCslopeavg,stdev_m,MCinteravg,stdev_b)
+
 
 plt.figure(1)
 plt.scatter(x,y)
